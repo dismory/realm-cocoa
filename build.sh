@@ -178,6 +178,10 @@ case "$COMMAND" in
             exit 0
         fi
         if ! [ -L core ]; then
+            if [ -d core -a -d ../tightdb ]; then
+                echo "Local build of core appears to be present."
+                exit 0
+            fi
             echo "core is not a symlink. Deleting..."
             rm -rf core
             download_core
