@@ -33,5 +33,11 @@
 @property (nonatomic, readwrite) RLMSchema *schema;
 
 - (void)notifyIfChanged;
-
 @end
+
+#if DEBUG
+// throw an exception if the realm is being used from the wrong thread
+void RLMCheckThread(RLMRealm *realm);
+#else
+inline void RLMCheckThread(RLMRealm *) { }
+#endif
