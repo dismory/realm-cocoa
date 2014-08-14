@@ -6,9 +6,11 @@
 ### Enhancements
 
 * Add support for the IN operator in predicates.
+* Add support for the BETWEEN operator in link queries.
 * Switch to building the SDK from source when using CocoaPods and add a
   Realm.Headers subspec for use in targets that should not link a copy of Realm
   (such as test targets).
+
 
 ### Bugfixes
 
