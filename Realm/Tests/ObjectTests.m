@@ -202,10 +202,10 @@
     NSDictionary *invalidDict= @{@"employees": @[@[@"Alex", @29, @2]]};
     XCTAssertThrows([[CompanyObject alloc] initWithObject:invalidDict], @"Dictionary missing properties should throw");
 
-    OwnerObject *owner = [[OwnerObject alloc] initWithObject:@[@"Brian", @{@"dogName": @"Brido"}]];
+    OwnerObject *owner = [[OwnerObject alloc] initWithObject:@[@"Brian", @{@"dogName": @"Brido", @"age": @0}]];
     XCTAssertEqualObjects(owner.dog.dogName, @"Brido");
 
-    OwnerObject *ownerArrayDog = [[OwnerObject alloc] initWithObject:@[@"JP", @[@"PJ"]]];
+    OwnerObject *ownerArrayDog = [[OwnerObject alloc] initWithObject:@[@"JP", @[@"PJ", @0]]];
     XCTAssertEqualObjects(ownerArrayDog.dog.dogName, @"PJ");
 }
 
@@ -601,8 +601,8 @@
     // create with object literals
     [realm beginWriteTransaction];
 
-    [OwnerObject createInDefaultRealmWithObject:@[@"Brian", @{@"dogName": @"Brido"}]];
-    [OwnerObject createInDefaultRealmWithObject:@[@"JP", @[@"PJ"]]];
+    [OwnerObject createInDefaultRealmWithObject:@[@"Brian", @{@"dogName": @"Brido", @"age": @0}]];
+    [OwnerObject createInDefaultRealmWithObject:@[@"JP", @[@"PJ", @0]]];
 
     [realm commitWriteTransaction];
 
