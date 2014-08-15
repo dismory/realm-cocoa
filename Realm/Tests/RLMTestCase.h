@@ -40,6 +40,9 @@ NSString *RLMRealmPathForFile(NSString *);
 
 @interface RLMTestCase : XCTestCase
 
+@property (nonatomic, strong) NSMutableSet *realmPaths;
+
+- (RLMRealm *)realmWithFileName:(NSString *)path;
 - (RLMRealm *)realmWithTestPath;
 - (RLMRealm *)realmWithTestPathAndSchema:(RLMSchema *)schema;
 - (RLMRealm *)dynamicRealmWithTestPathAndSchema:(RLMSchema *)schema;

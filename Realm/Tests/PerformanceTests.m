@@ -33,10 +33,11 @@
     }];
 }
 
+#if 0
 - (void)testInsertSingle {
     [self measureBlock:^{
         RLMRealm *realm = self.realmWithTestPath;
-        for (int i = 0; i < 100; ++i) {
+        for (int i = 0; i < 1000; ++i) {
             [realm beginWriteTransaction];
             StringObject *obj = [[StringObject alloc] init];
             obj.stringCol = @"a";
@@ -46,12 +47,13 @@
         [self tearDown];
     }];
 }
+#endif
 
 - (void)testInsertMultiple {
     [self measureBlock:^{
         RLMRealm *realm = self.realmWithTestPath;
         [realm beginWriteTransaction];
-        for (int i = 0; i < 100; ++i) {
+        for (int i = 0; i < 10000; ++i) {
             StringObject *obj = [[StringObject alloc] init];
             obj.stringCol = @"a";
             [realm addObject:obj];
@@ -61,10 +63,27 @@
     }];
 }
 
+- (void)testInsertMultipleAutoreleasePool {
+    [self measureBlock:^{
+        RLMRealm *realm = self.realmWithTestPath;
+        [realm beginWriteTransaction];
+        for (int i = 0; i < 10000; ++i) {
+            @autoreleasepool {
+                StringObject *obj = [[StringObject alloc] init];
+                obj.stringCol = @"a";
+                [realm addObject:obj];
+            }
+        }
+        [realm commitWriteTransaction];
+        [self tearDown];
+    }];
+}
+
+#if 0
 - (void)testInsertSingleLiteral {
     [self measureBlock:^{
         RLMRealm *realm = self.realmWithTestPath;
-        for (int i = 0; i < 100; ++i) {
+        for (int i = 0; i < 10000; ++i) {
             [realm beginWriteTransaction];
             [StringObject createInRealm:realm withObject:@[@"a"]];
             [realm commitWriteTransaction];
@@ -72,13 +91,28 @@
         [self tearDown];
     }];
 }
+#endif
 
 - (void)testInsertMultipleLiteral {
     [self measureBlock:^{
         RLMRealm *realm = self.realmWithTestPath;
         [realm beginWriteTransaction];
-        for (int i = 0; i < 100; ++i) {
+        for (int i = 0; i < 10000; ++i) {
             [StringObject createInRealm:realm withObject:@[@"a"]];
+        }
+        [realm commitWriteTransaction];
+        [self tearDown];
+    }];
+}
+
+- (void)testInsertMultipleLiteralAutoreleasePool {
+    [self measureBlock:^{
+        RLMRealm *realm = self.realmWithTestPath;
+        [realm beginWriteTransaction];
+        for (int i = 0; i < 10000; ++i) {
+            @autoreleasepool {
+                [StringObject createInRealm:realm withObject:@[@"a"]];
+            }
         }
         [realm commitWriteTransaction];
         [self tearDown];
@@ -88,7 +122,7 @@
 - (RLMRealm *)createStringObjects {
     RLMRealm *realm = self.realmWithTestPath;
     [realm beginWriteTransaction];
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 10000; ++i) {
         [StringObject createInRealm:realm withObject:@[@"a"]];
         [StringObject createInRealm:realm withObject:@[@"b"]];
     }
@@ -147,6 +181,45 @@
         for (StringObject *so in [StringObject allObjectsInRealm:realm]) {
             so.stringCol = @"c";
         }
+        [realm commitWriteTransaction];
+    }];
+}
+
+- (void)testEnumerateAndMutateAutoreleasePool {
+    RLMRealm *realm = [self createStringObjects];
+
+    [self measureBlock:^{
+        [realm beginWriteTransaction];
+        for (StringObject *so in [StringObject allObjectsInRealm:realm]) {
+            @autoreleasepool {
+                so.stringCol = @"c";
+            }
+        }
+        [realm commitWriteTransaction];
+    }];
+}
+
+- (void)testDeleteAll {
+    NSMutableArray *realms = [NSMutableArray arrayWithCapacity:10];
+    for (int i = 0; i < 10; ++i) {
+        RLMRealm *realm = [self realmWithFileName:[NSString stringWithFormat:@"delete-%d.realm", i]];
+        [realm beginWriteTransaction];
+        for (int i = 0; i < 10000; ++i) {
+            @autoreleasepool {
+                [StringObject createInRealm:realm withObject:@[@"a"]];
+                [StringObject createInRealm:realm withObject:@[@"b"]];
+            }
+        }
+        [realm commitWriteTransaction];
+        [realms addObject:realm];
+    }
+
+    [self measureBlock:^{
+        RLMRealm *realm = realms.lastObject;
+        [realms removeLastObject];
+
+        [realm beginWriteTransaction];
+        [realm deleteObjects:[StringObject allObjectsInRealm:realm]];
         [realm commitWriteTransaction];
     }];
 }

@@ -28,7 +28,7 @@
 @end
 
 #if !defined(SWIFT)
-@implementation XCTestExpectation{
+@implementation XCTestExpectation {
 @public
     BOOL _fulfilled;
 }
@@ -80,7 +80,6 @@ static void RLMDeleteRealmFilesAtPath(NSString *path) {
     }
 }
 
-
 @implementation RLMTestCase
 #if !defined(SWIFT)
 {
@@ -88,7 +87,7 @@ static void RLMDeleteRealmFilesAtPath(NSString *path) {
 }
 #endif
 
-+ (void)setUp
+- (void)setUp
 {
     [super setUp];
     
@@ -97,7 +96,7 @@ static void RLMDeleteRealmFilesAtPath(NSString *path) {
     RLMDeleteRealmFilesAtPath(RLMTestRealmPath());
 }
 
-+ (void)tearDown
+- (void)tearDown
 {
     [super tearDown];
 
@@ -107,15 +106,17 @@ static void RLMDeleteRealmFilesAtPath(NSString *path) {
     // Delete Realm files
     RLMDeleteRealmFilesAtPath(RLMDefaultRealmPath());
     RLMDeleteRealmFilesAtPath(RLMTestRealmPath());
+
+    for (NSString *path in self.realmPaths) {
+        RLMDeleteRealmFilesAtPath(path);
+    }
 }
 
 - (void)invokeTest
 {
-    [RLMTestCase setUp];
     @autoreleasepool {
         [super invokeTest];
     }
-    [RLMTestCase tearDown];
 }
 
 - (RLMRealm *)realmWithTestPath
@@ -129,6 +130,15 @@ static void RLMDeleteRealmFilesAtPath(NSString *path) {
 
 - (RLMRealm *)dynamicRealmWithTestPathAndSchema:(RLMSchema *)schema {
     return [RLMRealm realmWithPath:RLMTestRealmPath() readOnly:NO dynamic:YES schema:schema error:nil];
+}
+
+- (RLMRealm *)realmWithFileName:(NSString *)filename {
+    if (!_realmPaths) {
+        _realmPaths = [NSMutableSet new];
+    }
+    NSString *path = RLMRealmPathForFile(filename);
+    [self.realmPaths addObject:path];
+    return [RLMRealm realmWithPath:path];
 }
 
 #if !defined(SWIFT)
