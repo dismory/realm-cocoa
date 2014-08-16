@@ -202,12 +202,29 @@
 
 - (NSString *)description
 {
+    return [self descriptionWithObjectsSeen:[NSMutableSet new]];
+}
+
+- (NSString *)descriptionWithObjectsSeen:(NSMutableSet *)seen {
+    if ([seen containsObject:self]) {
+        return [NSString stringWithFormat:@"<cycle: %p>", self];
+    }
+    [seen addObject:self];
+
     NSString *baseClassName = self.objectSchema.className;
     NSMutableString *mString = [NSMutableString stringWithFormat:@"%@ {\n", baseClassName];
     RLMObjectSchema *objectSchema = self.realm.schema[baseClassName];
     
     for (RLMProperty *property in objectSchema.properties) {
-        [mString appendFormat:@"\t%@ = %@;\n", property.name, [self[property.name] description]];
+        id object = self[property.name];
+        NSString *sub;
+        if ([object respondsToSelector:@selector(descriptionWithObjectsSeen:)]) {
+            sub = [object descriptionWithObjectsSeen:seen];
+        }
+        else {
+            sub = [object description];
+        }
+        [mString appendFormat:@"\t%@ = %@;\n", property.name, sub];
     }
     [mString appendString:@"}"];
     
